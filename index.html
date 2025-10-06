@@ -96,7 +96,9 @@
                             app.mylink = data.link[0];
                             app.counter++;
                             if(app.stop && app.counter < 100){
-                                app.getdata();
+                                setTimeout(() => {
+                                      app.getdata();
+                                }, 2000);
                             }
                         }
                     }); 
@@ -105,4 +107,5 @@
         });
     </script>
 </html>
+
 
