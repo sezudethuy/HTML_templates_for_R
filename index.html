@@ -60,7 +60,7 @@
                     const uriContent = "data:text/plain;charset=utf-8," + window.encodeURIComponent(this.text);
                     const element = document.createElement('a');
                     element.setAttribute('href', uriContent);
-                    element.setAttribute('download', this.file_name + ".txt);
+                    element.setAttribute('download', this.file_name + ".txt");
                     element.style.display = 'none';
                     document.body.appendChild(element);
                     element.click();
@@ -109,6 +109,7 @@
         });
     </script>
 </html>
+
 
 
 
