@@ -57,7 +57,7 @@
                 },
                 download: function(){
                     // Create a Blob object with the content
-                    const uriContent = "data:text/plain;charset=utf-8," + window.encodeURIComponent(this.text);
+                    const uriContent = "data:text/plain;charset=utf-8," + window.encodeURIComponent(this.text + ";\t\t" + this.mylink);
                     const element = document.createElement('a');
                     element.setAttribute('href', uriContent);
                     element.setAttribute('download', this.file_name + ".txt");
@@ -109,6 +109,7 @@
         });
     </script>
 </html>
+
 
 
 
