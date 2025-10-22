@@ -25,7 +25,7 @@
     </head>
     <body>
         <div id="App" class="container-md">
-            <b-row>
+            <b-row style="height:50px" class="sticky-top">
                 <b-col>
                     <input type="text" v-model="mylink"><button @click="stop=true; counter=0;getdata();">Start</button><button @click="stopft">Stop</button><button @click="download">Donwload</button>
                     {{counter}} <br>
@@ -34,6 +34,9 @@
                     <br><br><br>
                     {{text}}
                 </b-col>
+            </b-row>
+            <b-row sytle="padding-top:55px">
+                <b-col></b-col>
             </b-row>
         </div>
     </body>
@@ -109,6 +112,7 @@
         });
     </script>
 </html>
+
 
 
 
