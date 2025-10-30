@@ -84,6 +84,7 @@
                                     tt <- gsub("</p>", ". ", tt); \
                                     tt <- gsub("&#34;", "-", tt); \
                                     tt <- gsub("&#39;", "-", tt); \
+                                    tt <- paste(tt, "\\n"); \
                                     nextCh <- inhalt[grep("btnNextChapter", inhalt)]; \
                                     nextCh <- strsplit(nextCh, split=\"href=\")[[1]][2]; \
                                     nextCh <- strsplit(nextCh, split="style")[[1]][1]; \
@@ -112,6 +113,7 @@
         });
     </script>
 </html>
+
 
 
 
