@@ -81,7 +81,7 @@
                     app.stop = true;
                     var mydata = await webR.evalRString(`
 library(curl)
-` + "inhalt <- try(scan(curl::curl('" + app.mylink + "')" + `, sep="\n", quote="", what="character"));
+` + "inhalt <- try(scan(curl::curl('" + app.mylink + "', 'r')" + `, sep="\n", quote="", what="character"));
 tt <- inhalt[grep('<div class="truyen">', inhalt)]
 tt <- gsub('<div class="truyen">', "", tt)
 tt <- gsub("<br>", ". ", tt)
