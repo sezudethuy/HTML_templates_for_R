@@ -59,7 +59,7 @@
             mounted: function(){
                 //console.log(this.mylink);
                 //this.getdata();
-                console.log("V2");
+                console.log("V3");
             },
             methods: {
                 stopft: function(){
@@ -82,11 +82,11 @@
                     var mydata = await webR.evalRString(`
 library(curl)
 inhalt <- try(scan(curl::curl('` + app.mylink + `'), sep="\n", quote="", what="character"))
-tt <- inhalt[grep("<div class=\"truyen\">", inhalt)]
+tt <- inhalt[grep('<div class="truyen">', inhalt)]
 tt <- gsub('<div class="truyen">', "", tt)
 tt <- gsub("<br>", ". ", tt)
 tt <- gsub("</div>", ".", tt)
-tt <- gsub("\"", "'", tt)
+tt <- gsub('"', "'", tt)
 tt <- paste(tt, "\n")
 nextCh <- inhalt[grep("class='next'", inhalt)][1]
 nextCh <- strsplit(nextCh, split="href=\'")[[1]][2]
