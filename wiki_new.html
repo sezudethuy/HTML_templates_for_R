@@ -59,7 +59,7 @@
             mounted: function(){
                 //console.log(this.mylink);
                 //this.getdata();
-                console.log("V5");
+                console.log("V6");
             },
             methods: {
                 stopft: function(){
@@ -81,6 +81,7 @@
                     app.stop = true;
                     var mydata = await webR.evalRString(`
 library(curl)
+options(timeout = max(100000, getOption("timeout")))
 ` + "inhalt <- try(scan(curl::curl('" + app.mylink + "', 'r')" + `, sep="\n", quote="", what="character"));
 tt <- inhalt[grep('<div class="truyen">', inhalt)]
 tt <- gsub('<div class="truyen">', "", tt)
