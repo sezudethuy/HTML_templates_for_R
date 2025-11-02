@@ -54,8 +54,8 @@
             mounted: function(){
                 //console.log(this.mylink);
                 //this.getdata();
-                console.log("V5");
-                this.getweb(this.mylink);
+                console.log("V6");
+                //this.getweb(this.mylink);
             },
             methods: {
                 stopft: function(){
@@ -101,26 +101,16 @@
                     var app = this;
                     app.stop = true;
                     //console.log(app.mylink);
-                    var split = "<div id=\"bookContentBody\" class=\"\" data-activates='ddAddName' style=\"margin-top: 1rem\">" ;
-                    var obj = {"x": "link <- '" + app.mylink + "'; \
-                                    inhalt <- scan(curl::curl(link), sep='\n', quote='', what=character()); \
-                                    " + 'tt <- inhalt[grep("<div class=\"truyen\">", inhalt)]; \
-                                    tt <- gsub("<div class=\"truyen\">", " ", tt); \
-                                    //tt <- gsub("<br>", ". ", tt); \
-                                    //tt <- gsub("</div>", ". ", tt); \
-                                    //tt <- paste(tt, "\\n"); \
-                                    //nextCh <- inhalt[grep("class=\'next\'", inhalt)]; \
-                                    //nextCh <- strsplit(nextCh, split=\"href=\'")[[1]][2]; \
-                                    //nextCh <- strsplit(nextCh, split="\' ")[[1]][1]; \
-                                    //link <- paste("https://wikidich.com.vn", nextCh, sep=""); \
-                                    list(text = tt, link = 1)'};
+                    //var split = "<div id=\"bookContentBody\" class=\"\" data-activates='ddAddName' style=\"margin-top: 1rem\">" ;
+                    var obj = {"url": app.mylink};
                     //console.log(obj);
                     $.ajax({
-                        url: "https://cloud.opencpu.org/ocpu/library/curl/R/identity/json?force=TRUE",
+                        url: "https://cloud.opencpu.org/ocpu/library/curl/R/curl/json?force=TRUE",
                         type: "POST",
                         data: obj,
                         success: function(data){
                            // data stores results
+                            consolo.log(data);
                             app.text = app.text + data.text[0];
                             app.mylink = data.link[0];
                             app.counter++;
