@@ -78,8 +78,8 @@
                                     inhalt <- scan(link, sep='\n', quote='', what=character()); \
                                     tt <- inhalt[grep(\"bookContentBody\", inhalt)]; \
                                     tt <- tail(strsplit(tt,split='style=\"margin-top: 1rem\">')[[1]],1);\
-                                    tt <- paste(strsplit(tt,spli=\"<br>\")[[1]], collapse=\". \"); \
-                                    tt <- paste(strsplit(tt,spli=\"\<script src=/static/js/adx/wiki-adx-m8-1.0.2.min.js\>\</script\>\")[[1]], collapse=\" \"); \
+                                    tt <- paste(strsplit(tt,split=\"<br>\")[[1]], collapse=\". \"); \
+                                    tt <- paste(strsplit(tt,split=\"\<script src=/static/js/adx/wiki-adx-m8-1.0.2.min.js\>\</script\>\")[[1]], collapse=\" \"); \
                                     "  + 'tt <- gsub("<p>", " ", tt); \
                                     tt <- gsub("</p>", ". ", tt); \
                                     tt <- gsub("&#34;", "-", tt); \
@@ -113,6 +113,7 @@
         });
     </script>
 </html>
+
 
 
 
