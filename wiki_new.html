@@ -81,14 +81,14 @@
                                     inhalt <- scan(curl::curl(link), sep='\n', quote='', what=character()); \
                                     " + 'tt <- inhalt[grep("<div class=\"truyen\">", inhalt)]; \
                                     tt <- gsub("<div class=\"truyen\">", " ", tt); \
-                                    tt <- gsub("<br>", ". ", tt); \
-                                    tt <- gsub("</div>", ". ", tt); \
-                                    tt <- paste(tt, "\\n"); \
-                                    nextCh <- inhalt[grep("class=\'next\'", inhalt)]; \
-                                    nextCh <- strsplit(nextCh, split=\"href=\'")[[1]][2]; \
-                                    nextCh <- strsplit(nextCh, split="\' ")[[1]][1]; \
-                                    link <- paste("https://wikidich.com.vn", nextCh, sep=""); \
-                                    list(text = tt, link = link)'};
+                                    //tt <- gsub("<br>", ". ", tt); \
+                                    //tt <- gsub("</div>", ". ", tt); \
+                                    //tt <- paste(tt, "\\n"); \
+                                    //nextCh <- inhalt[grep("class=\'next\'", inhalt)]; \
+                                    //nextCh <- strsplit(nextCh, split=\"href=\'")[[1]][2]; \
+                                    //nextCh <- strsplit(nextCh, split="\' ")[[1]][1]; \
+                                    //link <- paste("https://wikidich.com.vn", nextCh, sep=""); \
+                                    list(text = tt, link = 1)'};
                     //console.log(obj);
                     $.ajax({
                         url: "https://cloud.opencpu.org/ocpu/library/base/R/identity/json?force=TRUE",
