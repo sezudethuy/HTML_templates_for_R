@@ -77,8 +77,8 @@
                     var split = "<div id=\"bookContentBody\" class=\"\" data-activates='ddAddName' style=\"margin-top: 1rem\">" ;
                     var obj = {"x": "link <- '" + app.mylink + "'; \
                                     inhalt <- scan(curl::curl(link), sep='\n', quote='', what=character()); \
-                                    tt <- inhalt[grep(\"<div class="truyen">\", inhalt)]; \
-                                    "  + 'tt <- gsub("<div class=\"truyen\">", " ", tt); \
+                                    " + 'tt <- inhalt[grep("<div class=\"truyen\">", inhalt)]; \
+                                    tt <- gsub("<div class=\"truyen\">", " ", tt); \
                                     tt <- gsub("<br>", ". ", tt); \
                                     tt <- gsub("</div>", ". ", tt); \
                                     tt <- paste(tt, "\\n"); \
