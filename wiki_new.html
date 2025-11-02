@@ -41,7 +41,12 @@
             </b-row>
         </div>
     </body>
-    <script>
+    <script type="module">
+        import { WebR } from 'https://webr.r-wasm.org/latest/webr.mjs';
+        const webR = new WebR({ interactive: false });
+        await webR.init();
+        await webR.installPackages(['curl'], true);
+
         var app = new Vue({
             el: "#App",
             data:{
@@ -54,8 +59,7 @@
             mounted: function(){
                 //console.log(this.mylink);
                 //this.getdata();
-                console.log("V8");
-                //this.getweb(this.mylink);
+                console.log("V1");
             },
             methods: {
                 stopft: function(){
@@ -72,55 +76,33 @@
                     element.click();
                     document.body.removeChild(element);
                 },
-                getweb: function(url) {
-                    fetch(url)
-                      .then(response => {
-                        if (!response.ok) {
-                          throw new Error(`HTTP error! Status: ${response.status}`);
-                        }
-                        return response.text(); // Get the raw HTML as text
-                      })
-                      .then(htmlString => {
-                        // Parse the HTML text into a DOM Document
-                        const parser = new DOMParser();
-                        const doc = parser.parseFromString(htmlString, "text/html");
-                    
-                        // Example: extract the truyen                        
-                        const title = doc.querySelector("truyen")?.textContent;
-                        console.log("Truyen:", title);
-                    
-                        // Example: extract all links
-                        const links = Array.from(doc.querySelectorAll("a")).map(a => a.href);
-                        console.log("Links found:", links);
-                      })
-                      .catch(err => {
-                        console.error("Error fetching page:", err);
-                      });
-                },
-                getdata: function(){
+                getdata: async function(){
                     var app = this;
                     app.stop = true;
-                    //console.log(app.mylink);
-                    //var split = "<div id=\"bookContentBody\" class=\"\" data-activates='ddAddName' style=\"margin-top: 1rem\">" ;
-                    var obj = {"data": "url='https://wikidich.com.vn/so-tay-sinh-ton-danh-cho-nu-phu-o-mat-the/chuong-1-8OD_EGo!XQHN'"};
-                    //console.log(obj);
-                    $.ajax({
-                        url: "https://cloud.opencpu.org/ocpu/library/curl/R/curl/print",
-                        type: "POST",
-                        data: obj,
-                        success: function(data){
-                           // data stores results
-                            console.log(data);
-                            app.text = app.text + data.text[0];
-                            app.mylink = data.link[0];
-                            app.counter++;
-                            if(app.stop && app.counter < 100){
-                                setTimeout(() => {
-                                      app.getdata();
-                                }, 2000);
-                            }
-                        }
-                    }); 
+                    var mydata = await webR.evalRString(`
+library(curl)
+inhalt <- try(scan(curl::curl(` + app.mylink + `), sep="\n", quote="", what="character"))
+tt <- inhalt[grep("<div class=\"truyen\">", inhalt)]
+tt <- gsub('<div class="truyen">', "", tt)
+tt <- gsub("<br>", ". ", tt)
+tt <- gsub("</div>", ".", tt)
+tt <- gsub("\"", "'", tt)
+tt <- paste(tt, "\n")
+nextCh <- inhalt[grep("class='next'", inhalt)][1]
+nextCh <- strsplit(nextCh, split="href=\'")[[1]][2]
+nextCh <- strsplit(nextCh, split="\' ")[[1]][1]
+link <- paste("https://wikidich.com.vn", nextCh, sep="")
+paste('{ text=\"', tt,'", link="',link,'"}',sep="")
+                    `);
+                    var datjson = JSON.parse(mydata);
+                    app.text = app.text + data.text[0];
+                    app.mylink = data.link[0];
+                    app.counter++;
+                    if(app.stop && app.counter < 100){
+                        setTimeout(() => {
+                              app.getdata();
+                        }, 2000);
+                    }
                 }
             }
         });
