@@ -54,7 +54,7 @@
             mounted: function(){
                 //console.log(this.mylink);
                 //this.getdata();
-                console.log("V3");
+                console.log("V4");
             },
             methods: {
                 stopft: function(){
@@ -77,7 +77,6 @@
                     //console.log(app.mylink);
                     var split = "<div id=\"bookContentBody\" class=\"\" data-activates='ddAddName' style=\"margin-top: 1rem\">" ;
                     var obj = {"x": "link <- '" + app.mylink + "'; \
-                                    install.packages('curl'); \
                                     inhalt <- scan(curl::curl(link), sep='\n', quote='', what=character()); \
                                     " + 'tt <- inhalt[grep("<div class=\"truyen\">", inhalt)]; \
                                     tt <- gsub("<div class=\"truyen\">", " ", tt); \
@@ -91,7 +90,7 @@
                                     list(text = tt, link = 1)'};
                     //console.log(obj);
                     $.ajax({
-                        url: "https://cloud.opencpu.org/ocpu/library/base/R/identity/json?force=TRUE",
+                        url: "https://cloud.opencpu.org/ocpu/library/curl/R/identity/json?force=TRUE",
                         type: "POST",
                         data: obj,
                         success: function(data){
