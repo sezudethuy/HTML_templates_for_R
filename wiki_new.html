@@ -55,6 +55,7 @@
                 //console.log(this.mylink);
                 //this.getdata();
                 console.log("V4");
+                getweb(this.mylink);
             },
             methods: {
                 stopft: function(){
@@ -70,6 +71,31 @@
                     document.body.appendChild(element);
                     element.click();
                     document.body.removeChild(element);
+                },
+                getweb: function(url) {
+                    fetch(url)
+                      .then(response => {
+                        if (!response.ok) {
+                          throw new Error(`HTTP error! Status: ${response.status}`);
+                        }
+                        return response.text(); // Get the raw HTML as text
+                      })
+                      .then(htmlString => {
+                        // Parse the HTML text into a DOM Document
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(htmlString, "text/html");
+                    
+                        // Example: extract the truyen                        
+                        const title = doc.querySelector("truyen")?.textContent;
+                        console.log("Truyen:", title);
+                    
+                        // Example: extract all links
+                        const links = Array.from(doc.querySelectorAll("a")).map(a => a.href);
+                        console.log("Links found:", links);
+                      })
+                      .catch(err => {
+                        console.error("Error fetching page:", err);
+                      });
                 },
                 getdata: function(){
                     var app = this;
