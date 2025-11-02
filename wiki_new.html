@@ -59,7 +59,7 @@
             mounted: function(){
                 //console.log(this.mylink);
                 //this.getdata();
-                console.log("V8");
+                console.log("999");
             },
             methods: {
                 stopft: function(){
@@ -81,7 +81,6 @@
                     app.stop = true;
                     var mydata = await webR.evalRString(`
 library(curl)
-#inhalt <- try(scan(curl::curl('https://wikidich.com.vn/so-tay-sinh-ton-danh-cho-nu-phu-o-mat-the/chuong-1-8OD_EGo!XQHN', 'r'), sep="\n", quote="", what="character"));
 res <- curl::curl_fetch_memory('https://wikidich.com.vn/so-tay-sinh-ton-danh-cho-nu-phu-o-mat-the/chuong-1-8OD_EGo!XQHN')
 print(rawToChar(res$content))
 tt <- inhalt[grep('<div class="truyen">', inhalt)]
