@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <!-- Load required Bootstrap and BootstrapVue CSS -->
+        <link type="text/css" rel="stylesheet" href="https://unpkg.com/bootstrap@4.6.1/dist/css/bootstrap.min.css" />
+
+        <!-- Load Vue followed by BootstrapVue -->
+        <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+        <script src="https://unpkg.com/bootstrap-vue@2.22.0/dist/bootstrap-vue.min.js"></script>
+        <script src="https://unpkg.com/bootstrap-vue@2.22.0/dist/bootstrap-vue-icons.min.js"></script>
+
+        <script src="https://unpkg.com/@popperjs/core@2.11.5/dist/umd/popper.min.js"></script>
+
+        <!-- Load the following for Plotly Graphics -->
+        <script src="https://cdn.plot.ly/plotly-2.9.0.min.js"></script>
+
+        <!-- Load Math Package-->
+        <script src="https://cdn.jsdelivr.net/npm/jstat@latest/dist/jstat.min.js"></script>
+
+        <!-- OpenCPU client library -->
+        <script src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
+        <script src="https://cdn.opencpu.org/opencpu-0.4.js"></script>
+
+        <!-- Datatable  -->
+        <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
+        <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
+
+        <link type="text/css" rel="stylesheet" href="https://cdn.datatables.net/buttons/2.2.2/css/buttons.dataTables.min.css"></link>
+        <script type="text/javascript" src="https://cdn.datatables.net/buttons/2.2.2/js/dataTables.buttons.min.js"></script>
+        <script src="https://cdn.datatables.net/select/1.3.4/js/dataTables.select.min.js"></script>
+
+        <!-- import CSS Element selects-->
+        <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+        <!-- import JavaScript -->
+        <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+
+        <!--incude Echarts-->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.1/echarts.min.js"></script>
+
+        <style>
+            html {
+                font-size: 1.5rem;
+            }
+        </style>
+
+        <title>Decision Tree Graph</title>
+    </head>
+    <body>
+        <b-container id="App" fluid>
+            <h4>BLRM - Dose Escalation</h4>
+            <b-row>
+                <b-col cols="5" style="height:100%;">
+                    <b-card>
+                    <span style="font-size: large; font-weight: bold; text-align: center;">Next (de-)escalation tree</span>
+                    <br><span style="font-size: medium;">Click on specific scenarios for further details.</span>
+                    <div id="chart" style="width: 100%; height: 80vh;"></div>
+                    </b-card>
+                </b-col>
+                <b-col style="height:100%;">
+                    <b-card>
+                    <span style="font-size: large; font-weight: bold; text-align: center;">Data Situation</span>
+                    <table class="table table-sm" style="font-size: small;">
+                        <tr>
+                            <th>Cohort</th><th>Dose</th><th>#DLTs</th><th>#Patients</th>
+                        </tr>
+                        <tr v-for="(rr, ri) in data.data[selectNode].tab" :style="{color: (ri==data.data[selectNode].tab.length-1 ? 'red' : 'black')}"><td>{{"Cohort" + (ri+1) + (ri==data.data[selectNode].tab.length-1 ? "( Actual Cohort)" :"")}}</td><td v-for="(cc,i) in rr">{{cc + (i==0? data.doselab:"")}}</td></tr>
+                    </table>
+                    <div id="distplot"  style="width: 100%; height: 50vh;"></div>
+                    <table class="table table-sm" style=" font-size: small;">
+                        <tr>
+                            <th></th>
+                            <th v-for="i in data.grid" :style="{'background-color': i==data.data[selectNode].nrecdose ? 'green': 'white', 'color': i==data.data[selectNode].nrecdose ? 'white': 'black'}"> {{i + data.doselab+ (i==data.data[selectNode].nrecdose ? '*': '') }}</th>
+                        </tr>
+                        <tr v-for="j in [4,3,2]">
+                            <td>{{rows[j]}}</td>
+                            <td v-for="(row, ind) in data.grid" :style="{'background-color': row==data.data[selectNode].nrecdose ? 'green': 'white', 'color': row==data.data[selectNode].nrecdose ? 'white': 'black'}">{{data.data[selectNode].dist[j][ind]}}</td>
+                        </tr>
+                        <tr>
+                            <td>Loss Function Value</td>
+                            <td v-for="(row, ind) in data.grid" :style="{'background-color': row==data.data[selectNode].nrecdose ? 'green': 'white', 'color': row==data.data[selectNode].nrecdose ? 'white': 'black'}">{{data.data[selectNode].loss[0][ind]}}</td>
+                        </tr>
+                    </table>
+                    <span style="font-size: medium;">* Recommended Dose</span>
+                    </b-card>
+                </b-col>
+            </b-row>
+        </b-container>
+    </body>
+    <script>
+        const dataframe = {"grid":[10,12,20,40,75,90,100],"cohortsize":[3],"startdose":[40],"data":{"0":{"nrecdose":[75],"dist":[[0,0,0,0,0.01,0.02,0.03],[0,0,0,0.01,0.03,0.08,0.11],[0,0,0.01,0.03,0.08,0.17,0.23],[0,0.01,0.03,0.08,0.17,0.33,0.41],[0.01,0.04,0.1,0.22,0.38,0.59,0.69]],"loss":[[1,1,0.99,0.95,0.87,0.83,0.86]],"tab":[[12,0,3],[20,0,3],[40,0,3]]},"1":{"nrecdose":[75],"dist":[[0,0,0.01,0.02,0.06,0.11,0.14],[0,0,0.02,0.08,0.15,0.27,0.32],[0,0.02,0.06,0.15,0.27,0.42,0.49],[0.01,0.04,0.11,0.25,0.41,0.59,0.66],[0.04,0.11,0.24,0.43,0.62,0.78,0.84]],"loss":[[1,0.99,0.93,0.76,0.76,1.01,1.16]],"tab":[[12,0,3],[20,0,3],[40,1,3]]},"2":{"nrecdose":[40],"dist":[[0,0,0.02,0.08,0.16,0.25,0.29],[0,0.02,0.07,0.19,0.31,0.46,0.52],[0.01,0.04,0.13,0.29,0.45,0.61,0.67],[0.02,0.09,0.22,0.41,0.58,0.74,0.79],[0.08,0.2,0.38,0.59,0.75,0.87,0.91]],"loss":[[1,0.96,0.78,0.69,1.01,1.41,1.56]],"tab":[[12,0,3],[20,0,3],[40,2,3]]},"3":{"nrecdose":[20],"dist":[[0,0.01,0.06,0.17,0.28,0.4,0.45],[0,0.04,0.14,0.31,0.47,0.61,0.66],[0.02,0.08,0.22,0.43,0.6,0.74,0.78],[0.04,0.14,0.33,0.55,0.71,0.83,0.87],[0.12,0.28,0.5,0.71,0.84,0.92,0.95]],"loss":[[0.99,0.89,0.66,0.92,1.41,1.74,1.82]],"tab":[[12,0,3],[20,0,3],[40,3,3]]}},"doselab":["mg/m2"]};
+        const Mcolor = ["#1dbecf", "#0066b3", "#522f91", "#ffcb08", "#ed174b", "#009a5b", "#ee3897", "#a5ce43", "#e1c1cb", "#95d5d2", "#c3dfa4", "#fedbb4"];
+ 
+        var app = new Vue({
+            el: "#App",
+            data:{
+               data:dataframe,
+               selectNode: "0",
+               rows: ["5", "25", "Median", "75% quantile", "95% quantile"],
+               regions: [0,0.2,0.35,0.6, 1]
+            },
+            mounted: function(){
+                var app = this;
+                var dom = document.getElementById('chart');
+                var myChart = echarts.init(dom, null, {
+                    renderer: 'canvas',
+                    useDirtyRect: false
+                });
+
+                var mydata = {name:dataframe.startdose[0] + dataframe.doselab, cohort: "Actual Cohort", children:[]};
+                for(let i in dataframe.data){
+                    mydata.children.push({
+                        name: i + (i==1 ? " DLT" : " DLTs"), cohort: "DLTs",collapsed:false, symbol:"none", label:{verticalAlign:"bottom", align:"left"}, children: [{
+                            name: dataframe.data[i].nrecdose[0] + dataframe.doselab, cohort: "Next Cohort", children:[], dlt:i,
+                            itemStyle : {borderColor: i=="0"? "green": "blue", color: i=="0"? "green": "white"}
+                        }]
+                    });
+                }
+                console.log(mydata);
+
+                var checkStop = function(parent){
+                    if(parent.name == "Stop"){
+                        parent.label = {color:"red"};
+                        parent.itemStyle = {borderColor:"white"};
+                        parent.children = [];
+                    }else{
+                        parent.children.forEach(x => checkStop(x));
+                    }
+                }
+                checkStop(mydata);
+
+                const option = {
+                   /** title:{
+                        text:"My Dose Escalation Tree",
+                        textAlign:"center",
+                        left:"50%",
+                        top:"5%"
+                    },**/
+                    tooltip: {
+                        trigger: 'item',
+                        triggerOn: 'mousemove'
+                    },
+                    series: [
+                        {
+                        id:"treeA",
+                        type: 'tree',
+                        data: [mydata],
+                        top: '5%',
+                        left: '10%',
+                        bottom: '1%',
+                        right: '10%',
+                        symbol: 'rect',
+                        symbolSize: [80,20],
+                        edgeShape: 'curve',
+                        depth:3,
+                        initialTreeDepth:4,
+                        label: {
+                            position: 'insideLeft',
+                            verticalAlign: 'middle',
+                            align: 'left',
+                            fontSize: 12
+                        },
+                        leaves: {
+                            label: {
+                            position: 'insideLeft',
+                            verticalAlign: 'middle',
+                            align: 'left'
+                            }
+                        },
+                        emphasis: {
+                            focus: 'relative'
+                        },
+                        lineStyle:{curveness:0.3},
+                        itemStyle: { color: 'white' , borderColor:"blue", borderJoin:"miter"},
+                        expandAndCollapse: false,
+                        animationDuration: 550,
+                        animationDurationUpdate: 750,
+                        },
+                        {
+                        id: "treeB",
+                        type: 'tree',
+                        data: [{id:1, name:"Actual Cohort", children:[{id:2, name:"Next Cohort", children:[]}]}],
+                        top: '-20%',
+                        left: '10%',
+                        bottom: '70%',
+                        right: '10%',
+                        symbol: 'rect',
+                        symbolSize: [80,20],
+                        edgeShape: 'curve',
+                        initialTreeDepth:2,
+                        label: {
+                            position: 'insideLeft',
+                            verticalAlign: 'middle',
+                            align: 'left',
+                            fontSize: 12
+                        },
+                        leaves: {
+                            label: {
+                            position: 'insideLeft',
+                            verticalAlign: 'middle',
+                            align: 'left'
+                            }
+                        },
+                        emphasis: {
+                            focus: 'relative'
+                        },
+                        lineStyle:{curveness:0.3, color:"white"},
+                        itemStyle: { color: 'lightblue' , borderColor:"lightblue", borderJoin:"miter"},
+                        expandAndCollapse: false,
+                        animationDuration: 550,
+                        animationDurationUpdate: 750
+                        }
+                    ],
+                    tooltip: {
+                        formatter: function (params) {
+                            const d = params.data;
+                            return `
+                                <strong>${d.cohort}</strong><br/>
+                                Dose: ${d.name}<br/>
+                            `;
+                        }
+                    }
+                };
+                myChart.setOption(option);
+                window.addEventListener('resize', myChart.resize);
+                var temp = myChart.getOption();
+                myChart.setOption(temp);
+                this.plotDist("0");
+                myChart.on("click", function(params){
+                    console.log(params);
+                    if(params.data.cohort=="Next Cohort"){
+                        app.plotDist("" + params.data.dlt);
+                        app.selectNode = "" + params.data.dlt;
+                        var opt = myChart.getOption();
+                        console.log(opt);
+                        console.log(opt.series[0].data[0].children[parseFloat(params.data.dlt)]);
+                        for(let i in dataframe.data){
+                            opt.series[0].data[0].children[parseFloat(i)].children[0].itemStyle = {borderColor: i==params.data.dlt? "green": "blue",
+                                color: i==params.data.dlt? "green": "white"};
+                        }
+                        myChart.setOption(opt); 
+                    }
+                });
+                
+            },
+            methods: {
+                plotDist: function(i){
+                    var traces = [];
+                    var rg = dataframe.grid[dataframe.grid.length-1] - dataframe.grid[0];
+                    var trace1 = {
+                        x: [], y:[], type: "scatter", name: "95% - CI", mode:"lines", line: {width:2, color:"black", opacity:0.3}
+                    }
+                    for(let j=0; j< dataframe.grid.length; j++){
+                        trace1.x = trace1.x.concat([dataframe.grid[j], dataframe.grid[j], dataframe.grid[j]]);
+                        trace1.y = trace1.y.concat([dataframe.data[i].dist[0][j], dataframe.data[i].dist[4][j], NaN]);
+                    }
+                    traces.push(trace1);
+                    var trace2 = {
+                        x: [], y:[], type: "scatter", name: "75% - CI", mode:"lines", line: {width:6, color:"black", opacity:0.3}
+                    }
+                    for(let j=0; j< dataframe.grid.length; j++){
+                        trace2.x = trace2.x.concat([dataframe.grid[j], dataframe.grid[j], dataframe.grid[j]]);
+                        trace2.y = trace2.y.concat([dataframe.data[i].dist[1][j], dataframe.data[i].dist[3][j], NaN]);
+                    }
+                    traces.push(trace2);
+                    var trace3 = {
+                        x: [], y:[], type: "scatter", name: "Median", mode:"markers", marker: {size:10, color: "black"}
+                    }
+                    for(let j=0; j< dataframe.grid.length; j++){
+                        trace3.x.push(dataframe.grid[j]);
+                        trace3.y.push(dataframe.data[i].dist[2][j]);
+                    }
+                    traces.push(trace3);
+                    
+                    var shapes = [];
+                    var cols = ["coral", "lightgreen", "coral", "red"];
+                    for(let i=0; i<this.regions.length-1;i++){
+                        shapes.push({
+                            x0: dataframe.grid[0]-rg/10, x1:dataframe.grid[dataframe.grid.length-1]+rg/10, y0:this.regions[i], y1:this.regions[i+1], fillcolor:cols[i],
+                            type:"rect", line:{color:cols[i]}, opacity:0.3
+                        });
+                    }
+                    Plotly.react("distplot", traces, {
+                        title: {text: "BLRM results for " + i + (i==1 ? " DLT" : " DLTs") + " in "+ dataframe.cohortsize[0] + " patients"},
+                        shapes:shapes,
+                        legend: {orientation: "h", y:1.1},
+                        yaxis : {range:[-0.05,1], title:"Probabilty of  observing a DLT", zeroline:false},
+                        xaxis : {tickvals:dataframe.grid, zeroline:false, range: [dataframe.grid[0]-rg/15, dataframe.grid[dataframe.grid.length-1]+rg/15], title:"Dose in mg/m2"}
+                    });
+                },
+                getChild: function(nodes){
+                    return(nodes.reduce((arr, x) => { return(x.children ? arr.concat(x.children) : arr); }, []));
+                },
+                getChildX: function(nodes, lev){
+                    for(let i=0;i<lev;i++){
+                        nodes = this.getChild(nodes);
+                    }
+                    return(nodes);
+                }
+            }
+        });
+    </script>
+</html>
