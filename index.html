@@ -32,7 +32,7 @@
                     {{ mylink }} <br> Main index; current status: {{stop}}
                     <input type="text" v-model="file_name">
                     <br><br><br>
-                    {{text}}
+                    <div style="height:500px;overflow:auto; width:100%;">{{text}}</div>
                 </b-col>
             </b-row>
             <b-row sytle="padding-top:55px">
@@ -113,6 +113,7 @@
         });
     </script>
 </html>
+
 
 
 
