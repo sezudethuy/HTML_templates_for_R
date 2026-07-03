@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <!-- Load required Bootstrap and BootstrapVue CSS -->
+        <link type="text/css" rel="stylesheet" href="https://unpkg.com/bootstrap@5.1.3/dist/css/bootstrap.min.css" />
+        <!-- Load Vue followed by BootstrapVue -->
+        <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+        <script src="https://unpkg.com/bootstrap-vue@2.21.2/dist/bootstrap-vue.min.js"></script>
+        <script src="https://unpkg.com/bootstrap-vue@2.21.2/dist/bootstrap-vue-icons.min.js"></script>
+        <!-- Load the following for Plotly Graphics -->
+        <script src="https://cdn.plot.ly/plotly-2.9.0.min.js"></script>
+        <!-- Load Math Package-->
+        <script src="https://cdn.jsdelivr.net/npm/jstat@latest/dist/jstat.min.js"></script>
+        <!-- OpenCPU client library -->
+        <script src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
+        <script src="https://cdn.opencpu.org/opencpu-0.4.js"></script>
+        <!-- Datatable  -->
+        <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
+        <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
+        <link type="text/css" rel="stylesheet" href="https://cdn.datatables.net/buttons/2.2.2/css/buttons.dataTables.min.css"></link>
+        <script type="text/javascript" src="https://cdn.datatables.net/buttons/2.2.2/js/dataTables.buttons.min.js"></script>
+        <script src="https://cdn.datatables.net/select/1.3.4/js/dataTables.select.min.js"></script>
+        <title>HTML Template for simple Scatterplot</title>
+    </head>
+    <body>
+        <div id="App" class="container-md">
+            <b-row style="height:50px" class="sticky-top">
+                <b-col>
+                    <input type="text" v-model="mylink"><button @click="stop=true; counter=0;getdata();">Start</button><button @click="stopft">Stop</button><button @click="download">Donwload</button>
+                    {{counter}} <br>
+                    {{ mylink }} <br> Main index; current status: {{stop}}
+                    <input type="text" v-model="file_name">
+                    <br><br><br>
+                    <div style="height:500px;overflow:auto; width:100%;">{{text}}</div>
+                </b-col>
+            </b-row>
+            <b-row sytle="padding-top:55px">
+                <b-col></b-col>
+            </b-row>
+        </div>
+    </body>
+    <script>
+        String.prototype.decodeHTML = function() {
+            var map = {"gt":">" /* , … */};
+            return this.replace(/&(#(?:x[0-9a-f]+|\d+)|[a-z]+);?/gi, function($0, $1) {
+                if ($1[0] === "#") {
+                    return String.fromCharCode($1[1].toLowerCase() === "x" ? parseInt($1.substr(2), 16)  : parseInt($1.substr(1), 10));
+                } else {
+                    return map.hasOwnProperty($1) ? map[$1] : $0;
+                }
+            });
+        };
+        var app = new Vue({
+            el: "#App",
+            data:{
+                text: "",
+                mylink: "https://www.wattpad.com/amp/1177816181-np-t%E1%BB%95ng-c%C3%B4ng-th%C3%B4i-mi%C3%AAn-h%E1%BB%87-th%E1%BB%91ng-%C3%BD-th%E1%BB%A9c-th%C3%A2n-th%E1%BB%83",
+                counter: 0,
+                stop: true,
+                file_name: "wiki_text"
+            },
+            mounted: function(){
+                //console.log(this.mylink);
+                //this.getdata();
+            },
+            methods: {
+                stopft: function(){
+                    this.stop = false;
+                },
+                download: function(){
+                    // Create a Blob object with the content
+                    const uriContent = "data:text/plain;charset=utf-8," + window.encodeURIComponent(this.text + ";\t\t" + this.mylink);
+                    const element = document.createElement('a');
+                    element.setAttribute('href', uriContent);
+                    element.setAttribute('download', this.file_name + ".txt");
+                    element.style.display = 'none';
+                    document.body.appendChild(element);
+                    element.click();
+                    document.body.removeChild(element);
+                },
+                getdata: function(){
+                    var app = this;
+                    app.stop = true;
+                    //console.log(app.mylink);
+                    var split = "<div id=\"bookContentBody\" class=\"\" data-activates='ddAddName' style=\"margin-top: 1rem\">" ;
+                    var obj = {"x": "link <- '" + app.mylink + "'; \
+                                    inhalt <- scan(link, sep='\n', quote='', what='character'); \
+                                    tt <- inhalt[grep('<p data-p-id', inhalt)]; \
+                                    tt <- gsub('<p data-p-id=\"[[:alnum:]]*\">', '', tt); \
+                                    nextCh <- inhalt[grepl('https://www.wattpad.com', inhalt) & grepl('next-button', inhalt)];\
+                                    nextCh <- strsplit(nextCh, 'www.wattpad.com')[[1]][2]; \
+                                    link <- paste('https://www.wattpad.com/amp', substring(nextCh,1, nchar(nextCh)-2), sep=''); \
+                                    list(text = paste(tt,collapse=';'), link = link)"};
+                    //console.log(obj);
+                    $.ajax({
+                        url: "https://cloud.opencpu.org/ocpu/library/base/R/identity/json?force=TRUE",
+                        type: "POST",
+                        data: obj,
+                        success: function(data){
+                           // data stores results
+                            app.text = app.text + data.text[0].decodeHTML();
+                            app.mylink = data.link[0];
+                            app.counter++;
+                            if(app.stop && app.counter < 100){
+                                setTimeout(() => {
+                                      app.getdata();
+                                }, 2000);
+                            }
+                        }
+                    }); 
+                }
+            }
+        });
+    </script>
+</html>
+
+
+
+
+
+
+
+
+
+
