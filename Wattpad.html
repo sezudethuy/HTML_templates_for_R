@@ -100,7 +100,7 @@
                         success: function(data){
                            // data stores results
                             app.text = app.text + data.text[0].decodeHTML().replace("</p>", " ").replace("&quot;", "'");
-                            app.mylink = data.link[0];
+                            app.mylink = data.link[0] == app.mylink ? "" : data.link[0];
                             app.counter++;
                             if(app.stop && app.counter < 100){
                                 setTimeout(() => {
