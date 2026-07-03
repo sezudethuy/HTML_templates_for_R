@@ -99,7 +99,7 @@
                         data: obj,
                         success: function(data){
                            // data stores results
-                            app.text = app.text + data.text[0].decodeHTML().replace("</p>", " ").replace("&quot;", "'");
+                            app.text = app.text + data.text[0].decodeHTML().replaceAll("</p>", " ").replaceAll("&quot;", "'");
                             app.mylink = data.link[0] == app.mylink ? "" : data.link[0];
                             app.counter++;
                             if(app.stop && app.counter < 100){
