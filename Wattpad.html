@@ -91,7 +91,7 @@
                                     nextCh <- inhalt[grepl('https://www.wattpad.com', inhalt) & grepl('next-button', inhalt)];\
                                     nextCh <- strsplit(nextCh, 'www.wattpad.com')[[1]][2]; \
                                     link <- paste('https://www.wattpad.com/amp', substring(nextCh,1, nchar(nextCh)-2), sep=''); \
-                                    list(text = paste(tt,collapse=';'), link = link)"};
+                                    list(text = tt, link = link)"};
                     //console.log(obj);
                     $.ajax({
                         url: "https://cloud.opencpu.org/ocpu/library/base/R/identity/json?force=TRUE",
@@ -99,7 +99,7 @@
                         data: obj,
                         success: function(data){
                            // data stores results
-                            app.text = app.text + data.text[0].decodeHTML().replaceAll("</p>", " ").replaceAll("&quot;", "'");
+                            app.text = app.text + data.text.join("\n").decodeHTML().replaceAll("</p>", "\n").replaceAll("&quot;", "'");
                             app.mylink = data.link[0] == app.mylink ? "" : data.link[0];
                             app.counter++;
                             if(app.stop && app.counter < 100){
