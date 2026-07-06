@@ -55,7 +55,7 @@
             el: "#App",
             data:{
                 text: "",
-                mylink: "https://www.wattpad.com/1177816181-np-t%E1%BB%95ng-c%C3%B4ng-th%C3%B4i-mi%C3%AAn-h%E1%BB%87-th%E1%BB%91ng-%C3%BD-th%E1%BB%A9c-th%C3%A2n-th%E1%BB%83",
+                mylink: "https://www.wattpad.com/amp/1177816181-np-t%E1%BB%95ng-c%C3%B4ng-th%C3%B4i-mi%C3%AAn-h%E1%BB%87-th%E1%BB%91ng-%C3%BD-th%E1%BB%A9c-th%C3%A2n-th%E1%BB%83",
                 counter: 0,
                 stop: true,
                 file_name: "wiki_text"
@@ -81,7 +81,7 @@
                 },
                 getdata: function(){
                     var app = this;
-                    if(app.counter == 0) app.mylink = app.mylink.replace("https://www.wattpad.com/", "https://www.wattpad.com/amp/");
+                    // if(app.counter == 0) app.mylink = app.mylink.replace("https://www.wattpad.com/", "https://www.wattpad.com/amp/");
                     app.stop = true;
                     //console.log(app.mylink);
                     var split = "<div id=\"bookContentBody\" class=\"\" data-activates='ddAddName' style=\"margin-top: 1rem\">" ;
