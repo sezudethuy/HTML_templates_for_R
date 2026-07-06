@@ -100,8 +100,7 @@
                         data: obj,
                         success: function(data){
                            // data stores results
-                            app.text = app.text + data.text.join("\n").decodeHTML().replaceAll("</p>", "\n").replaceAll("&quot;", "'").
-                                replaceAll("<em>", "").replaceAll("</em>", "").replaceAll("strong>", "").replaceAll("</strong>", "");
+                            app.text = app.text + data.text.join("\n").decodeHTML().replaceAll("</p>", "\n").replaceAll("&quot;", "'");
                             app.mylink = data.link[0] == app.mylink ? "" : data.link[0];
                             app.counter++;
                             if(app.stop && app.counter < 100){
