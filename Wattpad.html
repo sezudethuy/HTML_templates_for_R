@@ -27,6 +27,7 @@
         <div id="App" class="container-md">
             <b-row style="height:50px" class="sticky-top">
                 <b-col>
+                    <input type="number" v-model="max"><br>
                     <input type="text" v-model="mylink"><button @click="stop=true; counter=0;getdata();">Start</button><button @click="stopft">Stop</button><button @click="download">Donwload</button>
                     {{counter}} <br>
                     {{ mylink }} <br> Main index; current status: {{stop}}
@@ -58,7 +59,8 @@
                 mylink: "https://www.wattpad.com/amp/1177816181-np-t%E1%BB%95ng-c%C3%B4ng-th%C3%B4i-mi%C3%AAn-h%E1%BB%87-th%E1%BB%91ng-%C3%BD-th%E1%BB%A9c-th%C3%A2n-th%E1%BB%83",
                 counter: 0,
                 stop: true,
-                file_name: "wiki_text"
+                file_name: "wiki_text",
+                max: 100
             },
             mounted: function(){
                 //console.log(this.mylink);
@@ -103,7 +105,7 @@
                             app.text = app.text + data.text.join("\n").decodeHTML().replaceAll("</p>", "\n").replaceAll("&quot;", "'");
                             app.mylink = data.link[0] == app.mylink ? "" : data.link[0];
                             app.counter++;
-                            if(app.stop && app.counter < 100){
+                            if(app.stop && app.counter < app.max){
                                 setTimeout(() => {
                                       app.getdata();
                                 }, 2000);
