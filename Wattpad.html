@@ -70,16 +70,21 @@
                 stopft: function(){
                     this.stop = false;
                 },
-                download: function(){
-                    // Create a Blob object with the content
-                    const uriContent = "data:text/plain;charset=utf-8," + window.encodeURIComponent(this.text + ";\t\t" + this.mylink);
+                download: function () {
+                    const content = this.text + ";\t\t" + this.mylink;
+                    // Blob statt Data-URI
+                    const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+                    const url = URL.createObjectURL(blob);
+                
                     const element = document.createElement('a');
-                    element.setAttribute('href', uriContent);
-                    element.setAttribute('download', this.file_name + ".txt");
-                    element.style.display = 'none';
+                    element.href = url;
+                    element.download = this.file_name + ".txt";
                     document.body.appendChild(element);
                     element.click();
+                
+                    // Aufräumen
                     document.body.removeChild(element);
+                    URL.revokeObjectURL(url);
                 },
                 getdata: function(){
                     var app = this;
