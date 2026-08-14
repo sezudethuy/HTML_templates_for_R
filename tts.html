@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Vietnamese Text to Speech Reader</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 30px;
+      line-height: 1.5;
+    }
+
+    textarea {
+      width: 100%;
+      max-width: 900px;
+    }
+
+    .controls {
+      margin-top: 15px;
+      margin-bottom: 15px;
+    }
+
+    .controls label {
+      display: inline-block;
+      margin-right: 15px;
+      margin-bottom: 10px;
+    }
+
+    button {
+      margin-right: 8px;
+      padding: 6px 12px;
+      cursor: pointer;
+    }
+
+    input[type="number"] {
+      width: 80px;
+    }
+
+    #currentChunkText {
+      max-width: 900px;
+      padding: 10px;
+      background: #f4f4f4;
+      border-left: 4px solid #0078d4;
+      margin-top: 15px;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+
+<body>
+
+<h2>Vietnamese Text to Speech Reader</h2>
+
+<div class="controls">
+  <label>
+    Upload TXT file:
+    <input type="file" id="fileInput" accept=".txt" onchange="loadTxtFile(event)">
+  </label>
+</div>
+
+<textarea id="text" rows="12" cols="80">
+Xin chào. Đây là một ví dụ về chức năng chuyển văn bản thành giọng nói bằng tiếng Việt.
+</textarea>
+
+<div class="controls">
+  <label>
+    Speed:
+    <span id="speedValue">2.0</span>x
+  </label>
+
+  <input
+    type="range"
+    id="speed"
+    min="0.5"
+    max="3"
+    step="0.1"
+    value="2"
+    oninput="updateSpeed()"
+  >
+</div>
+
+<div class="controls">
+  <label>
+    Start / current chunk:
+    <input
+      type="number"
+      id="chunkPosition"
+      min="1"
+      value="1"
+      onchange="setChunkPositionFromInput()"
+    >
+  </label>
+
+  <span>
+    / <span id="totalChunks">1</span> chunks
+  </span>
+</div>
+
+<div class="controls">
+  <button onclick="speakText()">▶ Speak</button>
+  <button onclick="pauseSpeaking()">⏸ Pause</button>
+  <button onclick="resumeSpeaking()">⏵ Resume</button>
+  <button onclick="stopSpeaking()">■ Stop</button>
+  <button onclick="refreshChunks()">Refresh chunks</button>
+</div>
+
+<h3>Current chunk</h3>
+<div id="currentChunkText">No chunk selected.</div>
+
+<script>
+let chunks = [];
+let currentChunkIndex = 0;
+let isSpeaking = false;
+const STORAGE_CHUNK_KEY = "tts_chunk_position";
+const STORAGE_SPEED_KEY = "tts_speed";
+let currentFileName = "default";
+
+function getTextStorageKey() {
+    return "tts_text_" + currentFileName;
+}
+
+function getChunkStorageKey() {
+    return "tts_chunk_" + currentFileName;
+}
+
+function saveCurrentPosition() {
+   localStorage.setItem(
+    getChunkStorageKey(),
+    currentChunkIndex + 1
+);
+}
+
+function restorePositionForCurrentFile() {
+
+    const savedPosition =
+        parseInt(
+            localStorage.getItem(
+                getChunkStorageKey()
+            ),
+            10
+        );
+
+    if (!isNaN(savedPosition)) {
+
+        document.getElementById("chunkPosition").value =
+            savedPosition;
+    }
+}
+
+function updateSpeed() {
+  document.getElementById("speedValue").textContent =
+    document.getElementById("speed").value;
+}
+
+function loadTxtFile(event) {
+
+    const file = event.target.files[0];
+
+    if (!file) {
+        return;
+    }
+
+    currentFileName = file.name;
+
+    localStorage.setItem(
+        "tts_last_file",
+        currentFileName
+    );
+
+    const reader = new FileReader();
+
+    reader.onload = function(e) {
+
+        document.getElementById("text").value =
+            e.target.result;
+
+        saveCurrentText();
+
+        restorePositionForCurrentFile();
+
+        refreshChunks();
+
+        alert("TXT file loaded successfully.");
+    };
+
+    reader.readAsText(file, "UTF-8");
+}
+
+function saveCurrentText() {
+
+    localStorage.setItem(
+        getTextStorageKey(),
+        document.getElementById("text").value
+    );
+}
+
+function createChunks(text, maxLength = 200) {
+  const sentences =
+    text.match(/[^.!?！？。]+[.!?！？。]*/g) || [text];
+
+  const result = [];
+  let currentChunk = "";
+
+  for (const sentence of sentences) {
+    const cleanSentence = sentence.trim();
+
+    if (!cleanSentence) {
+      continue;
+    }
+
+    if (currentChunk.length + cleanSentence.length <= maxLength) {
+      currentChunk += " " + cleanSentence;
+    } else {
+      if (currentChunk.trim()) {
+        result.push(currentChunk.trim());
+      }
+
+      if (cleanSentence.length > maxLength) {
+        for (let i = 0; i < cleanSentence.length; i += maxLength) {
+          result.push(
+            cleanSentence.substring(i, i + maxLength).trim()
+          );
+        }
+        currentChunk = "";
+      } else {
+        currentChunk = cleanSentence;
+      }
+    }
+  }
+
+  if (currentChunk.trim()) {
+    result.push(currentChunk.trim());
+  }
+
+  return result;
+}
+
+function refreshChunks() {
+
+  const savedPosition =
+    parseInt(document.getElementById("chunkPosition").value, 10) || 1;
+
+  const text = document.getElementById("text").value.trim();
+
+  chunks = createChunks(text, 200);
+
+  currentChunkIndex = Math.min(
+    savedPosition - 1,
+    Math.max(0, chunks.length - 1)
+  );
+
+  document.getElementById("totalChunks").textContent =
+    chunks.length;
+
+  updateChunkDisplay();
+}
+
+function updateChunkDisplay() {
+
+    document.getElementById("totalChunks").textContent =
+        chunks.length;
+
+    if (chunks.length === 0) {
+
+        document.getElementById("currentChunkText")
+            .textContent = "No chunks available.";
+
+        return;
+    }
+
+    document.getElementById("chunkPosition").value =
+        currentChunkIndex + 1;
+
+    document.getElementById("currentChunkText")
+        .textContent = chunks[currentChunkIndex];
+
+    saveCurrentPosition();   // NEW
+}
+
+function setChunkPositionFromInput() {
+
+  let position = parseInt(
+    document.getElementById("chunkPosition").value,
+    10
+  );
+
+  if (isNaN(position)) position = 1;
+
+  position = Math.max(
+    1,
+    Math.min(position, chunks.length)
+  );
+
+  currentChunkIndex = position - 1;
+
+  updateChunkDisplay();
+  saveCurrentPosition();
+
+  if (speechSynthesis.speaking) {
+    speechSynthesis.cancel();
+
+    if (isSpeaking) {
+      speakNextChunk();
+    }
+  }
+
+}
+
+function speakText() {
+
+  speechSynthesis.cancel();
+
+  // Rebuild chunks but keep current position
+  const text = document.getElementById("text").value.trim();
+
+  if (!text) {
+    alert("Vui lòng nhập văn bản hoặc tải lên file TXT.");
+    return;
+  }
+
+  chunks = createChunks(text, 200);
+
+  document.getElementById("totalChunks").textContent =
+    chunks.length;
+
+  // Read the position entered by the user
+  let startPosition = parseInt(
+    document.getElementById("chunkPosition").value,
+    10
+  );
+
+  if (isNaN(startPosition)) {
+    startPosition = 1;
+  }
+
+  startPosition = Math.max(
+    1,
+    Math.min(startPosition, chunks.length)
+  );
+
+  currentChunkIndex = startPosition - 1;
+
+  updateChunkDisplay();
+
+  isSpeaking = true;
+  speakNextChunk();
+}
+
+function speakNextChunk() {
+  if (!isSpeaking) {
+    return;
+  }
+
+  if (currentChunkIndex >= chunks.length) {
+    isSpeaking = false;
+    return;
+  }
+
+  updateChunkDisplay();
+
+  const speed =
+    parseFloat(document.getElementById("speed").value);
+
+  const utterance =
+    new SpeechSynthesisUtterance(chunks[currentChunkIndex]);
+
+  utterance.lang = "vi-VN";
+  utterance.rate = speed;
+  utterance.pitch = 1;
+
+  const voices = speechSynthesis.getVoices();
+
+  const vietnameseVoice =
+    voices.find(voice => voice.lang.startsWith("vi"));
+
+  if (vietnameseVoice) {
+    utterance.voice = vietnameseVoice;
+  }
+
+  utterance.onend = function() {
+    currentChunkIndex++;
+
+    if (currentChunkIndex < chunks.length) {
+      updateChunkDisplay();
+      speakNextChunk();
+    } else {
+      isSpeaking = false;
+      updateChunkDisplay();
+      console.log("Finished reading all chunks.");
+    }
+  };
+
+  utterance.onerror = function(event) {
+    console.error("Speech error:", event);
+
+    currentChunkIndex++;
+
+    if (currentChunkIndex < chunks.length) {
+      updateChunkDisplay();
+      speakNextChunk();
+    } else {
+      isSpeaking = false;
+    }
+  };
+
+  speechSynthesis.speak(utterance);
+}
+
+function pauseSpeaking() {
+  speechSynthesis.pause();
+}
+
+function resumeSpeaking() {
+  speechSynthesis.resume();
+}
+
+function stopSpeaking() {
+  isSpeaking = false;
+  speechSynthesis.cancel();
+}
+
+speechSynthesis.onvoiceschanged = function() {
+  console.log(
+    speechSynthesis.getVoices().map(voice => ({
+      name: voice.name,
+      lang: voice.lang
+    }))
+  );
+};
+
+document.getElementById("speed")
+    .addEventListener("input", () => {
+
+    const value =
+        document.getElementById("speed").value;
+
+    document.getElementById("speedValue")
+        .textContent = value;
+
+    localStorage.setItem(
+        STORAGE_SPEED_KEY,
+        value
+    );
+});
+
+function restoreSettings() {
+
+    const lastFile =
+        localStorage.getItem("tts_last_file");
+
+    const savedSpeed =
+        localStorage.getItem(STORAGE_SPEED_KEY);
+
+    if (savedSpeed) {
+
+        document.getElementById("speed").value =
+            savedSpeed;
+
+        document.getElementById("speedValue").textContent =
+            savedSpeed;
+    }
+
+    if (lastFile) {
+
+        currentFileName = lastFile;
+
+        const savedText =
+            localStorage.getItem(
+                getTextStorageKey()
+            );
+
+        if (savedText) {
+
+            document.getElementById("text").value =
+                savedText;
+        }
+
+        restorePositionForCurrentFile();
+    }
+}
+
+restoreSettings();
+refreshChunks();
+</script>
+
+</body>
+</html>
