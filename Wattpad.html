@@ -108,8 +108,7 @@
                         success: function(data){
                            // data stores results
                             app.text = app.text + "Phần " + (app.counter+1) + "\n\n" + 
-                                data.text.join("\n").decodeHTML().replaceAll("</p>", "\n").replaceAll("&quot;", "'").replaceAll("<br>", "\n\n").
-                                replaceAll("con cặc", "dương vật").replaceAll("lồn", "huyệt");
+                                data.text.join("\n").decodeHTML().replaceAll("</p>", "\n").replaceAll("&quot;", "'").replaceAll("<br>", "\n\n");
                             app.mylink = data.link[0] == app.mylink ? "" : data.link[0];
                             app.counter++;
                             if(app.stop && app.counter < app.max){
